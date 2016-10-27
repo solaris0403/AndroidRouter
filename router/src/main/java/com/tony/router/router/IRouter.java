@@ -11,4 +11,13 @@ public interface IRouter {
     boolean open(IRoute route);
 
     boolean open(String url);
+
+    /**
+     * 只是针对scheme进行match，因为能不能打开只有打开以后才可以知道。
+     * @param url
+     * @return
+     */
+    boolean canOpen(String url);
+
+    boolean canOpen(IRoute route);
 }

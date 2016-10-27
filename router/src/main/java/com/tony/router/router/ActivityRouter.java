@@ -84,6 +84,28 @@ public class ActivityRouter extends AbsRouter {
         return false;
     }
 
+    @Override
+    public boolean canOpen(String url) {
+        for (String scheme : MATCH_SCHEMES) {
+            if (TextUtils.equals(scheme, RouterUtils.getScheme(url))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean canOpen(IRoute route) {
+        if (route != null) {
+            for (String scheme : MATCH_SCHEMES) {
+                if (TextUtils.equals(scheme, route.getScheme())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
     private void startActivity(Context context, ActivityRoute activityRoute) throws RouteNotFoundException {
         Class<?> fromClazz = context != null ? context.getClass() : mContext.getClass();
@@ -111,6 +133,7 @@ public class ActivityRouter extends AbsRouter {
 
     /**
      * host 和path匹配称之为路由匹匹配
+     *
      * @param route
      * @return String the match routePath
      */
