@@ -110,7 +110,7 @@ public class RouterManager {
     /**
      * 设置指定Router执行
      */
-    public void setRouter(){
+    public void setRouter(IRouter routrt){
 
     }
 }
