@@ -1,7 +1,6 @@
 package com.tony.router;
 
 import android.app.Activity;
-import android.content.Context;
 
 import com.tony.router.route.IRoute;
 import com.tony.router.router.IRouter;
@@ -24,7 +23,8 @@ public class RouterManager {
         return mInstance;
     }
 
-    public RouterManager with(Context context){
+    public RouterManager with(Activity activity){
+        mActivity = new WeakReference(activity);
         return this;
     }
 
@@ -84,15 +84,6 @@ public class RouterManager {
         for (IRouter router : mRouters) {
             if (router.canOpen(url)) {
                 return router.open(url);
-            }
-        }
-        return false;
-    }
-
-    public boolean open(Context context, String url) {
-        for (IRouter router : mRouters) {
-            if (router.canOpen(url)) {
-                return router.open(context, url);
             }
         }
         return false;

@@ -308,11 +308,6 @@ public class ActivityRouter extends AbsRouter {
         return MATCH_SCHEMES;
     }
 
-    public void setMatchScheme(String scheme) {
-        MATCH_SCHEMES.clear();
-        MATCH_SCHEMES.add(scheme);
-    }
-
     public void setMatchSchemes(String... schemes) {
         MATCH_SCHEMES.clear();
         List<String> list = Arrays.asList(schemes);

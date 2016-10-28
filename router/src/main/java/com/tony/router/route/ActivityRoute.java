@@ -22,7 +22,7 @@ public class ActivityRoute extends AbsRoute {
     //Intent flags
     private int mFlags = 0;
     //Current Activity
-    private WeakReference<Activity> mActivity;
+    private WeakReference<Activity> mWpActivity;
 
     public ActivityRoute(String url) {
         super(url);
@@ -53,8 +53,8 @@ public class ActivityRoute extends AbsRoute {
     }
 
     public Activity getActivity(){
-        if(mActivity != null && mActivity.get() != null){
-            return mActivity.get();
+        if(mWpActivity != null && mWpActivity.get() != null){
+            return mWpActivity.get();
         } else {
             return null;
         }
@@ -65,14 +65,14 @@ public class ActivityRoute extends AbsRoute {
      */
     public ActivityRoute startActivity(Activity activity){
         mStartType = START_ACTIVITY;
-        mActivity = new WeakReference<>(activity);
+        mWpActivity = new WeakReference<>(activity);
         return this;
     }
 
     public ActivityRoute startActivityForResult(Activity activity, int requestCode){
         mRequestCode = requestCode;
         mStartType = START_ACTIVITY_FOR_RESULT;
-        mActivity = new WeakReference<>(activity);
+        mWpActivity = new WeakReference<>(activity);
         return this;
     }
 
@@ -86,9 +86,10 @@ public class ActivityRoute extends AbsRoute {
         private int mFlags = 0;
 
 
-        public Builder(IRouter router) {
+        public Builder(Activity activity, IRouter router) {
             mBundle = new Bundle();
             mRouter = router;
+            mActivity = activity;
         }
 
         public Builder setUrl(String url) {
@@ -150,16 +151,14 @@ public class ActivityRoute extends AbsRoute {
          * 默认方式启动
          * @return
          */
-        public ActivityRoute.Builder startActivity(Activity activity){
+        public ActivityRoute.Builder startActivity(){
             mStartType = START_ACTIVITY;
-            mActivity = activity;
             return this;
         }
 
-        public ActivityRoute.Builder startActivityForResult(Activity activity, int requestCode){
+        public ActivityRoute.Builder startActivityForResult(int requestCode){
             mRequestCode = requestCode;
             mStartType = START_ACTIVITY_FOR_RESULT;
-            mActivity = activity;
             return this;
         }
 

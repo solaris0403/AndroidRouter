@@ -1,17 +1,9 @@
 package com.tony.router;
 
 import android.app.Activity;
-import android.content.Context;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 
 import com.tony.router.route.IRoute;
-import com.tony.router.router.ActivityRouter;
-import com.tony.router.router.BrowserRouter;
-import com.tony.router.router.HistoryItem;
 import com.tony.router.router.IRouter;
-
-import java.util.Queue;
 
 public class Router {
     /**
@@ -54,24 +46,8 @@ public class Router {
     public void setRouteCacheSize(int size) {
     }
 
-
-    public static RouterManager with(Context context) {
-        return null;
-    }
-
     public static RouterManager with(Activity activity) {
-        return null;
-    }
-
-    public static RouterManager with(FragmentActivity activity) {
-        return null;
-    }
-
-    public static RouterManager with(Fragment fragment) {
-        return null;
-    }
-
-    public static RouterManager with(android.support.v4.app.Fragment fragment) {
+        RouterManager rm = RouterManager.getInstance().with(activity);
         return null;
     }
 
