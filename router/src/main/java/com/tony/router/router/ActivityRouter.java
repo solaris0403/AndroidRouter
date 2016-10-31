@@ -295,9 +295,6 @@ public class ActivityRouter extends AbsRouter {
         return KEY_URL;
     }
 
-    public List<HistoryItem> getRouteHistories() {
-        return mHistoryCaches;
-    }
 
     @Override
     public IRoute getRoute(String url) {
@@ -311,8 +308,6 @@ public class ActivityRouter extends AbsRouter {
     public void setMatchSchemes(String... schemes) {
         MATCH_SCHEMES.clear();
         List<String> list = Arrays.asList(schemes);
-        list.remove("");
-        list.remove(null);
         MATCH_SCHEMES.addAll(list);
     }
 

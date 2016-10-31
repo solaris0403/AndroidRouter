@@ -48,7 +48,7 @@ public class Router {
 
     public static RouterManager with(Activity activity) {
         RouterManager rm = RouterManager.getInstance().with(activity);
-        return null;
+        return rm;
     }
 
 

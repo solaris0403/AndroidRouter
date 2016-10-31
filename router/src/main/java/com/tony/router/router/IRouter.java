@@ -6,6 +6,12 @@ import com.tony.router.route.IRoute;
  * Created by tony on 10/26/16.
  */
 public interface IRouter {
+    /**
+     * 根据url生成route
+     *
+     * @param url
+     * @return
+     */
     IRoute getRoute(String url);
 
     boolean open(IRoute route);
@@ -14,6 +20,7 @@ public interface IRouter {
 
     /**
      * 只是针对scheme进行match，因为能不能打开只有打开以后才可以知道。
+     *
      * @param url
      * @return
      */

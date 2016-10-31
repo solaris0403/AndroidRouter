@@ -1,7 +1,7 @@
 package com.tony.router.router;
 
 /**
- * Created by tony on 10/26/16.
+ * 构造基本的Router实现
  */
 public abstract class AbsRouter implements IRouter {
 }
