@@ -4,8 +4,8 @@ package com.tony.router.route;
 import com.tony.router.router.IRouter;
 
 public class BrowserRoute extends AbsRoute {
-    public BrowserRoute(String url) {
-        super(url);
+    public BrowserRoute(IRouter router, String url) {
+        super(router, url);
     }
 
     public static class Builder {
@@ -21,7 +21,7 @@ public class BrowserRoute extends AbsRoute {
         }
 
         public BrowserRoute build() {
-            return new BrowserRoute(mUrl);
+            return new BrowserRoute(mRouter, mUrl);
         }
     }
 }

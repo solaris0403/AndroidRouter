@@ -1,5 +1,6 @@
 package com.tony.router.route;
 
+import com.tony.router.router.IRouter;
 import com.tony.router.util.RouterUtils;
 
 import java.util.List;
@@ -15,14 +16,21 @@ public abstract class AbsRoute implements IRoute {
     private int mPort;
     private List<String> mPath;
     private Map<String, String> mQueryParameters;
+    private IRouter mRouter;
 
-    public AbsRoute(String url) {
+    public AbsRoute(IRouter router, String url) {
+        this.mRouter = router;
         this.mUrl = url;
         this.mScheme = RouterUtils.getScheme(url);
         this.mHost = RouterUtils.getHost(url);
         this.mPort = RouterUtils.getPort(url);
         this.mPath = RouterUtils.getPathSegments(url);
         this.mQueryParameters = RouterUtils.getQueryParameter(url);
+    }
+
+    @Override
+    public IRouter getRouter() {
+        return mRouter;
     }
 
     @Override
@@ -53,5 +61,10 @@ public abstract class AbsRoute implements IRoute {
     @Override
     public Map<String, String> getParameters() {
         return mQueryParameters;
+    }
+
+    @Override
+    public boolean open() {
+        return mRouter.open(this);
     }
 }

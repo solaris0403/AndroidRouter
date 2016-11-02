@@ -48,6 +48,11 @@ public class BrowserRouter extends AbsRouter {
     }
 
     @Override
+    public boolean open(Context context, String url) {
+        return false;
+    }
+
+    @Override
     public boolean canOpen(String url) {
         return false;
     }
@@ -55,6 +60,11 @@ public class BrowserRouter extends AbsRouter {
     @Override
     public boolean canOpen(IRoute route) {
         return false;
+    }
+
+    @Override
+    public Class<? extends IRoute> getCanOpenRoute() {
+        return null;
     }
 
     protected boolean open(Context context, IRoute route){

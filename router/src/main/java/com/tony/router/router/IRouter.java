@@ -1,5 +1,7 @@
 package com.tony.router.router;
 
+import android.content.Context;
+
 import com.tony.router.route.IRoute;
 
 /**
@@ -18,6 +20,8 @@ public interface IRouter {
 
     boolean open(String url);
 
+    boolean open(Context context, String url);
+
     /**
      * 只是针对scheme进行match，因为能不能打开只有打开以后才可以知道。
      *
@@ -27,4 +31,10 @@ public interface IRouter {
     boolean canOpen(String url);
 
     boolean canOpen(IRoute route);
+
+    /**
+     * return the list that the IRoute list this router can open
+     * @return
+     */
+    Class<? extends IRoute> getCanOpenRoute();
 }

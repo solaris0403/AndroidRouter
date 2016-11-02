@@ -1,8 +1,11 @@
 package com.tony.router;
 
 import android.app.Activity;
+import android.content.Context;
 
 import com.tony.router.route.IRoute;
+import com.tony.router.router.ActivityRouter;
+import com.tony.router.router.IActivityRouteTableInitializer;
 import com.tony.router.router.IRouter;
 
 import java.lang.ref.WeakReference;
@@ -26,6 +29,19 @@ public class RouterManager {
     public RouterManager with(Activity activity){
         mActivity = new WeakReference(activity);
         return this;
+    }
+
+    public synchronized void initActivityRouter(Context context, IActivityRouteTableInitializer initializer, String ... schemes){
+        ActivityRouter router = ActivityRouter.getInstance();
+        if(initializer == null) {
+            router.init(context);
+        } else {
+            router.init(context, initializer);
+        }
+        if(schemes != null && schemes.length > 0){
+            router.setMatchSchemes(schemes);
+        }
+        addRouter(router);
     }
 
     /**

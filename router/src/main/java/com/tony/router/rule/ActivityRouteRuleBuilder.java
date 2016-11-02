@@ -1,7 +1,5 @@
 package com.tony.router.rule;
 
-import android.util.Log;
-
 import com.tony.router.util.RouterUtils;
 
 import java.util.ArrayList;
@@ -69,7 +67,7 @@ public class ActivityRouteRuleBuilder extends AbsRouteRuleBuilder{
         }
         String keyFormat = String.format(":%s{%s}", typeChar, key);
         if(mKeys.contains(keyFormat)){
-            Log.e(TAG, "", new KeyDuplicateException(keyFormat));
+//            Log.e(TAG, "", new KeyDuplicateException(keyFormat));
         } else {
             addPathSegment(keyFormat);
             mKeys.add(keyFormat);
@@ -93,11 +91,11 @@ public class ActivityRouteRuleBuilder extends AbsRouteRuleBuilder{
             if(seg.startsWith(":")){
                 Matcher matcher = p.matcher(seg);
                 if(!matcher.matches()){
-                    Timber.w("The key format not match : %s" , seg);
+//                    Timber.w("The key format not match : %s" , seg);
                     return false;
                 }
                 if(checkedSegs.contains(seg)){
-                    Timber.w("The key is duplicated : %s" , seg);
+//                    Timber.w("The key is duplicated : %s" , seg);
                     return false;
                 }
                 checkedSegs.add(seg);

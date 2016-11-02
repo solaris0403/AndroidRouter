@@ -24,8 +24,8 @@ public class ActivityRoute extends AbsRoute {
     //Current Activity
     private WeakReference<Activity> mWpActivity;
 
-    public ActivityRoute(String url) {
-        super(url);
+    public ActivityRoute(IRouter router, String url) {
+        super(router, url);
     }
 
     public Bundle getExtras() {
@@ -33,7 +33,7 @@ public class ActivityRoute extends AbsRoute {
     }
 
     public void setExtras(Bundle extras) {
-        this.mExtras = mExtras;
+        this.mExtras = extras;
     }
 
     public int getRequestCode() {
@@ -80,16 +80,15 @@ public class ActivityRoute extends AbsRoute {
         private String mUrl;
         private IRouter mRouter;
         private Bundle mBundle;
-        private Activity mActivity;
+        private Activity mAct;
         private int mStartType = 0;
         private int mRequestCode = 0;
         private int mFlags = 0;
 
 
-        public Builder(Activity activity, IRouter router) {
+        public Builder(IRouter router) {
             mBundle = new Bundle();
             mRouter = router;
-            mActivity = activity;
         }
 
         public Builder setUrl(String url) {
@@ -151,12 +150,14 @@ public class ActivityRoute extends AbsRoute {
          * 默认方式启动
          * @return
          */
-        public ActivityRoute.Builder startActivity(){
+        public ActivityRoute.Builder startActivity(Activity activity){
+            mAct = activity;
             mStartType = START_ACTIVITY;
             return this;
         }
 
-        public ActivityRoute.Builder startActivityForResult(int requestCode){
+        public ActivityRoute.Builder startActivityForResult(Activity activity, int requestCode){
+            mAct = activity;
             mRequestCode = requestCode;
             mStartType = START_ACTIVITY_FOR_RESULT;
             return this;
@@ -164,16 +165,16 @@ public class ActivityRoute extends AbsRoute {
 
 
         public ActivityRoute build() {
-            ActivityRoute route = new ActivityRoute(mUrl);
+            ActivityRoute route = new ActivityRoute(mRouter, mUrl);
             switch (mStartType) {
                 case START_ACTIVITY:
-                    route.startActivity(mActivity);
+                    route.startActivity(mAct);
                     break;
                 case START_ACTIVITY_FOR_RESULT:
-                    route.startActivityForResult(mActivity, mRequestCode);
+                    route.startActivityForResult(mAct, mRequestCode);
                     break;
                 default:
-                    route.startActivity(mActivity);
+                    route.startActivity(mAct);
                     break;
             }
             route.setExtras(mBundle);
