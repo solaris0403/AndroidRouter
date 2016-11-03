@@ -26,6 +26,7 @@ public abstract class AbsRoute implements IRoute {
         this.mPort = RouterUtils.getPort(url);
         this.mPath = RouterUtils.getPathSegments(url);
         this.mQueryParameters = RouterUtils.getQueryParameter(url);
+        RouteFactory.getInstance().put(url, this);
     }
 
     @Override

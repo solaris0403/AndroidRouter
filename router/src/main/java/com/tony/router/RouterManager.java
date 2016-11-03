@@ -2,13 +2,14 @@ package com.tony.router;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 
 import com.tony.router.route.IRoute;
 import com.tony.router.router.ActivityRouter;
+import com.tony.router.router.BrowserRouter;
 import com.tony.router.router.IActivityRouteTableInitializer;
 import com.tony.router.router.IRouter;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,9 +17,11 @@ import java.util.List;
  * 管理所有Router及Router的行为
  */
 public class RouterManager {
+    private static final String TAG = "RouterManager";
     private static RouterManager mInstance = new RouterManager();
     private static List<IRouter> mRouters = new ArrayList<>();
-    private WeakReference mActivity;
+    private Activity mActivity;
+
     private RouterManager() {
     }
 
@@ -26,22 +29,30 @@ public class RouterManager {
         return mInstance;
     }
 
-    public RouterManager with(Activity activity){
-        mActivity = new WeakReference(activity);
+    public RouterManager with(Activity activity) {
+        mActivity = activity;
         return this;
     }
 
-    public synchronized void initActivityRouter(Context context, IActivityRouteTableInitializer initializer, String ... schemes){
+    public synchronized void initActivityRouter(Context context, IActivityRouteTableInitializer initializer, String... schemes) {
         ActivityRouter router = ActivityRouter.getInstance();
-        if(initializer == null) {
+        if (initializer == null) {
             router.init(context);
         } else {
             router.init(context, initializer);
         }
-        if(schemes != null && schemes.length > 0){
+        if (schemes != null && schemes.length > 0) {
+            //重新设置match的schemes
             router.setMatchSchemes(schemes);
         }
+        //将初始化结束的router添加到mRouters中
         addRouter(router);
+    }
+
+    public synchronized void initBrowserRouter(Context context) {
+        BrowserRouter browserRouter = BrowserRouter.getInstance();
+        browserRouter.init(context);
+        addRouter(browserRouter);
     }
 
     /**
@@ -60,7 +71,7 @@ public class RouterManager {
             }
             mRouters.add(router);
         } else {
-            throw new NullPointerException("The router is null");
+            Log.e(TAG, "The router is null");
         }
     }
 
@@ -83,6 +94,7 @@ public class RouterManager {
     }
 
     // TODO: 10/27/16 打开方式只会取第一个，局限性？如何针对多open进行优化
+
     /**
      * 通过url生成route
      */
@@ -114,10 +126,20 @@ public class RouterManager {
         return false;
     }
 
+    public boolean open(Context context, String url){
+        for(IRouter router : mRouters){
+            if(router.canOpen(url)){
+                return router.open(context, url);
+            }
+        }
+        return false;
+    }
+
+
     /**
      * 设置指定Router执行
      */
-    public void setRouter(IRouter routrt){
+    public void setRouter(IRouter routrt) {
 
     }
 }

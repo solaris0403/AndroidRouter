@@ -2,14 +2,14 @@ package tony.androidrouter;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import com.tony.router.annotation.RouterMap;
-import com.tony.router.annotation.RouterMapUtil;
+import com.tony.router.Router;
+import com.tony.router.route.RouteFactory;
 
-@RouterMap("")
+import java.util.Random;
+
 public class MainActivity extends AppCompatActivity {
     private Button mBtnSecond;
     @Override
@@ -20,8 +20,14 @@ public class MainActivity extends AppCompatActivity {
         mBtnSecond.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Router.open("activity://second?a=1");
-                Log.e("123", String.valueOf(RouterMapUtil.getAllClassByAnnotation(RouterMap.class, "tony.androidrouter").size()));
+//                Router.open(MainActivity.this, "activity://second");
+//                ActivityRoute route = new ActivityRoute.Builder(ActivityRouter.getInstance()).build();
+//                route.open();
+//                Router.open(route);
+//                Log.e("123", String.valueOf(RouterMapUtil.getAllClassByAnnotation(RouterMap.class, "tony.androidrouter").size()));
+                Random random = new Random();
+                Router.getRoute("http://www.baidu.com");
+                RouteFactory.getInstance().display();
             }
         });
     }

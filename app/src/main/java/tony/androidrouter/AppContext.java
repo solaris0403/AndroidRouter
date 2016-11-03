@@ -22,5 +22,6 @@ public class AppContext extends Application{
                 router.put("activity://second", SecondActivity.class);
             }
         });
+        Router.initBrowserRouter(this);
     }
 }

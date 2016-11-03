@@ -6,6 +6,7 @@ import android.net.Uri;
 
 import com.tony.router.route.BrowserRoute;
 import com.tony.router.route.IRoute;
+import com.tony.router.util.RouterUtils;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -17,7 +18,7 @@ import java.util.Set;
 public class BrowserRouter extends AbsRouter {
     private static final Set<String> SCHEMES_CAN_OPEN = new LinkedHashSet<>();
 
-    private Context mContext;
+    private Context mBaseContext;
 
     static BrowserRouter mBrowserRouter = new BrowserRouter();  //浏览器
 
@@ -32,13 +33,13 @@ public class BrowserRouter extends AbsRouter {
     }
 
     public void init(Context context){
-        mContext = context;
+        mBaseContext = context;
     }
 
 
     @Override
     public boolean open(IRoute route) {
-        return open(mContext, route);
+        return open(mBaseContext, route);
     }
 
     @Override
@@ -49,22 +50,22 @@ public class BrowserRouter extends AbsRouter {
 
     @Override
     public boolean open(Context context, String url) {
-        return false;
+        return open(context, getRoute(url));
     }
 
     @Override
     public boolean canOpen(String url) {
-        return false;
+        return SCHEMES_CAN_OPEN.contains(RouterUtils.getScheme(url));
     }
 
     @Override
     public boolean canOpen(IRoute route) {
-        return false;
+        return getCanOpenRoute().equals(route.getClass());
     }
 
     @Override
     public Class<? extends IRoute> getCanOpenRoute() {
-        return null;
+        return BrowserRoute.class;
     }
 
     protected boolean open(Context context, IRoute route){

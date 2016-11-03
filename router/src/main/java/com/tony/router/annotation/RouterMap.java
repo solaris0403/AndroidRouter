@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by tony on 11/2/16.
+ * 需要结合项目以及runtime/class运行效率及内存占用来分析
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.CLASS)

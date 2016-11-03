@@ -1,0 +1,6 @@
+Router.open(String url);
+Router.open(Route route);
+Router.open(Activity activity, String url);
+Router.open(Activity activity, Route route);
+
+IRouter router = new ActivityRouter.Build().build();

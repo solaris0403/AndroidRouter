@@ -1,6 +1,5 @@
 package com.tony.router;
 
-import android.app.Activity;
 import android.content.Context;
 
 import com.tony.router.route.IRoute;
@@ -10,16 +9,24 @@ import com.tony.router.router.IRouter;
 public class Router {
     /**
      * 添加Router,通常在Application中初始化Router
+     *
      * @param router
      */
     public static void addRouter(IRouter router) {
         RouterManager.getInstance().addRouter(router);
     }
-    public static synchronized void initActivityRouter(Context context, IActivityRouteTableInitializer initializer, String ... scheme){
+
+    public static synchronized void initActivityRouter(Context context, IActivityRouteTableInitializer initializer, String... scheme) {
         RouterManager.getInstance().initActivityRouter(context, initializer, scheme);
     }
+
+    public static synchronized void initBrowserRouter(Context context) {
+        RouterManager.getInstance().initBrowserRouter(context);
+    }
+
     /**
      * 执行url
+     *
      * @param url
      * @return 执行结果
      */
@@ -29,11 +36,17 @@ public class Router {
 
     /**
      * 执行route
+     *
      * @param route
      * @return 执行结果
      */
     public static boolean open(IRoute route) {
         return RouterManager.getInstance().open(route);
+    }
+
+
+    public static boolean open(Context context, String url){
+        return RouterManager.getInstance().open(context, url);
     }
 
     /**
@@ -50,14 +63,10 @@ public class Router {
     public void setRouteCacheSize(int size) {
     }
 
-    public static RouterManager with(Activity activity) {
-        RouterManager rm = RouterManager.getInstance().with(activity);
-        return rm;
-    }
-
 
     /**
      * 通过url获得一个构造出来的Route
+     *
      * @param url
      * @return
      */

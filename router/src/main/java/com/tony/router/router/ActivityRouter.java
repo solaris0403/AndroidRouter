@@ -8,8 +8,6 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.tony.router.BuildConfig;
-import com.tony.router.exception.InvalidValueTypeException;
 import com.tony.router.exception.RouteNotFoundException;
 import com.tony.router.route.ActivityRoute;
 import com.tony.router.route.IRoute;
@@ -51,6 +49,10 @@ public class ActivityRouter extends AbsRouter {
     }
 
 
+    /**
+     * 初始化 主要是移除mRouteTable中无效的rul
+     * @param appContext
+     */
     public void init(Context appContext) {
         mBaseContext = appContext;
         for (String pathRule : mRouteTable.keySet()) {
@@ -129,7 +131,7 @@ public class ActivityRouter extends AbsRouter {
             try {
                 switch (activityRoute.getStartType()) {
                     case ActivityRoute.START_ACTIVITY:
-                        open(activityRoute, activityRoute.getActivity());
+                        open(activityRoute.getActivity(), activityRoute);
                         canOpen = true;
                         break;
                     case ActivityRoute.START_ACTIVITY_FOR_RESULT:
@@ -137,7 +139,7 @@ public class ActivityRouter extends AbsRouter {
                         canOpen = true;
                         break;
                     default:
-                        open(activityRoute, activityRoute.getActivity());
+                        open(activityRoute.getActivity(), activityRoute);
                         canOpen = true;
                         break;
                 }
@@ -159,7 +161,7 @@ public class ActivityRouter extends AbsRouter {
         if (route instanceof ActivityRoute) {
             ActivityRoute aRoute = (ActivityRoute) route;
             try {
-                open(aRoute, context);
+                open(context, aRoute);
                 return true;
             } catch (Exception e) {
                 Log.e(TAG, e.toString());
@@ -175,7 +177,7 @@ public class ActivityRouter extends AbsRouter {
      * @param context
      * @throws RouteNotFoundException
      */
-    protected void open(ActivityRoute route, Context context) throws RouteNotFoundException {
+    protected void open(Context context, ActivityRoute route) throws RouteNotFoundException {
         //创建intent
         Intent intent = match(route);
         if (intent == null) {
@@ -241,103 +243,6 @@ public class ActivityRouter extends AbsRouter {
             return routeUrl;
         }
         return null;
-    }
-
-    /**
-     * 从url中找出基本数据类型放到intent中,对此，是有点复杂的，如果把kv放在query中，的话可以简单一点，而且如果这样搞的话，服务端也需要重新修改，不符合标准
-     *
-     * @param routeUrl the matched route path
-     * @param givenUrl the given path
-     * @param intent   the intent
-     * @return the intent
-     */
-    private Intent setKeyValueInThePath(String routeUrl, String givenUrl, Intent intent) {
-        List<String> routePathSegs = RouterUtils.getPathSegments(routeUrl);
-        List<String> givenPathSegs = RouterUtils.getPathSegments(givenUrl);
-        for (int i = 0; i < routePathSegs.size(); i++) {
-            String seg = routePathSegs.get(i);
-            if (seg.startsWith(":")) {
-                int indexOfLeft = seg.indexOf("{");
-                int indexOfRight = seg.indexOf("}");
-                String key = seg.substring(indexOfLeft + 1, indexOfRight);
-                char typeChar = seg.charAt(1);
-                switch (typeChar) {
-                    //interger type
-                    case 'i':
-                        try {
-                            int value = Integer.parseInt(givenPathSegs.get(i));
-                            intent.putExtra(key, value);
-                        } catch (Exception e) {
-//                            Log.e(TAG, "解析整形类型失败 " + givenPathSegs.get(i), e);
-                            if (BuildConfig.DEBUG) {
-                                throw new InvalidValueTypeException(givenUrl, givenPathSegs.get(i));
-                            } else {
-                                //如果是在release情况下则给一个默认值
-                                intent.putExtra(key, 0);
-                            }
-                        }
-                        break;
-                    case 'f':
-                        //float type
-                        try {
-                            float value = Float.parseFloat(givenPathSegs.get(i));
-                            intent.putExtra(key, value);
-                        } catch (Exception e) {
-//                            Log.e(TAG, "解析浮点类型失败 " + givenPathSegs.get(i), e);
-                            if (BuildConfig.DEBUG) {
-                                throw new InvalidValueTypeException(givenUrl, givenPathSegs.get(i));
-                            } else {
-                                intent.putExtra(key, 0f);
-                            }
-                        }
-                        break;
-                    case 'l':
-                        //long type
-                        try {
-                            long value = Long.parseLong(givenPathSegs.get(i));
-                            intent.putExtra(key, value);
-                        } catch (Exception e) {
-//                            Log.e(TAG, "解析长整形失败 " + givenPathSegs.get(i), e);
-                            if (BuildConfig.DEBUG) {
-                                throw new InvalidValueTypeException(givenUrl, givenPathSegs.get(i));
-                            } else {
-                                intent.putExtra(key, 0l);
-                            }
-                        }
-                        break;
-                    case 'd':
-                        try {
-                            double value = Double.parseDouble(givenPathSegs.get(i));
-                            intent.putExtra(key, value);
-                        } catch (Exception e) {
-//                            Log.e(TAG, "解析double类型失败 " + givenPathSegs.get(i), e);
-                            if (BuildConfig.DEBUG) {
-                                throw new InvalidValueTypeException(givenUrl, givenPathSegs.get(i));
-                            } else {
-                                intent.putExtra(key, 0d);
-                            }
-                        }
-                        break;
-                    case 'c':
-                        try {
-                            char value = givenPathSegs.get(i).charAt(0);
-                        } catch (Exception e) {
-//                            Log.e(TAG, "解析Character类型失败" + givenPathSegs.get(i), e);
-                            if (BuildConfig.DEBUG) {
-                                throw new InvalidValueTypeException(givenUrl, givenPathSegs.get(i));
-                            } else {
-                                intent.putExtra(key, ' ');
-                            }
-                        }
-                        break;
-                    case 's':
-                    default:
-                        intent.putExtra(key, givenPathSegs.get(i));
-                }
-            }
-
-        }
-        return intent;
     }
 
     private Intent putExtras(String url, Intent intent) {
