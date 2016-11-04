@@ -163,7 +163,6 @@ public class ActivityRoute extends AbsRoute {
             return this;
         }
 
-
         public ActivityRoute build() {
             ActivityRoute route = new ActivityRoute(mRouter, mUrl);
             switch (mStartType) {
