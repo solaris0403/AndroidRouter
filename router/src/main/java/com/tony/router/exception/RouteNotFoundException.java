@@ -1,10 +1,7 @@
 package com.tony.router.exception;
 
-/**
- * Created by kris on 16/3/10.
- */
 public class RouteNotFoundException extends Exception {
-    public RouteNotFoundException(String routePath){
-        super(String.format("The route not found: %s", routePath));
+    public RouteNotFoundException(String url){
+        super(String.format("The route not found: %s", url));
     }
 }

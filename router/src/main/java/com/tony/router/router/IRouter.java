@@ -5,14 +5,11 @@ import android.content.Context;
 import com.tony.router.route.IRoute;
 
 /**
- * Created by tony on 10/26/16.
+ * 路由器
  */
 public interface IRouter {
     /**
      * 根据url生成route
-     *
-     * @param url
-     * @return
      */
     IRoute getRoute(String url);
 
@@ -24,17 +21,8 @@ public interface IRouter {
 
     /**
      * 只是针对scheme进行match，因为能不能打开只有打开以后才可以知道。
-     *
-     * @param url
-     * @return
      */
     boolean canOpen(String url);
 
     boolean canOpen(IRoute route);
-
-    /**
-     * return the list that the IRoute list this router can open
-     * @return
-     */
-    Class<? extends IRoute> getCanOpenRoute();
 }

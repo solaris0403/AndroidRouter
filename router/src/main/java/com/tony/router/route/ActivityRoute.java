@@ -24,8 +24,8 @@ public class ActivityRoute extends AbsRoute {
     //Current Activity
     private WeakReference<Activity> mWpActivity;
 
-    public ActivityRoute(IRouter router, String url) {
-        super(router, url);
+    public ActivityRoute(String url) {
+        super(url);
     }
 
     public Bundle getExtras() {
@@ -53,11 +53,10 @@ public class ActivityRoute extends AbsRoute {
     }
 
     public Activity getActivity(){
-        if(mWpActivity != null && mWpActivity.get() != null){
+        if(mWpActivity != null){
             return mWpActivity.get();
-        } else {
-            return null;
         }
+        return null;
     }
     /**
      * 默认方式启动
@@ -78,7 +77,6 @@ public class ActivityRoute extends AbsRoute {
 
     public static class Builder {
         private String mUrl;
-        private IRouter mRouter;
         private Bundle mBundle;
         private Activity mAct;
         private int mStartType = 0;
@@ -86,14 +84,9 @@ public class ActivityRoute extends AbsRoute {
         private int mFlags = 0;
 
 
-        public Builder(IRouter router) {
+        public Builder(String url) {
             mBundle = new Bundle();
-            mRouter = router;
-        }
-
-        public Builder setUrl(String url) {
             mUrl = url;
-            return this;
         }
 
         public Builder putParcelable(String key, Parcelable value) {
@@ -148,6 +141,7 @@ public class ActivityRoute extends AbsRoute {
 
         /**
          * 默认方式启动
+         * @param activity 当前activity
          * @return
          */
         public ActivityRoute.Builder startActivity(Activity activity){
@@ -164,7 +158,8 @@ public class ActivityRoute extends AbsRoute {
         }
 
         public ActivityRoute build() {
-            ActivityRoute route = new ActivityRoute(mRouter, mUrl);
+            //todo 在这里可以针对Route进行复用池的设计  当前先直接实例化
+            ActivityRoute route = new ActivityRoute(mUrl);
             switch (mStartType) {
                 case START_ACTIVITY:
                     route.startActivity(mAct);

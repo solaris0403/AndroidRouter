@@ -6,9 +6,9 @@ import android.view.View;
 import android.widget.Button;
 
 import com.tony.router.Router;
-import com.tony.router.route.RouteFactory;
+import com.tony.router.router.ActivityRouter;
 
-import java.util.Random;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     private Button mBtnSecond;
@@ -25,9 +25,10 @@ public class MainActivity extends AppCompatActivity {
 //                route.open();
 //                Router.open(route);
 //                Log.e("123", String.valueOf(RouterMapUtil.getAllClassByAnnotation(RouterMap.class, "tony.androidrouter").size()));
-                Random random = new Random();
-                Router.getRoute("http://www.baidu.com");
-                RouteFactory.getInstance().display();
+//                Random random = new Random();
+//                Router.getRoute("zx://activity").open();
+                Router.open(MainActivity.this, "zx://activity/second");
+                Set set = ActivityRouter.getInstance().getMatchSchemes();
             }
         });
     }

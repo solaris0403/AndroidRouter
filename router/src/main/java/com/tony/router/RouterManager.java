@@ -1,8 +1,6 @@
 package com.tony.router;
 
-import android.app.Activity;
 import android.content.Context;
-import android.util.Log;
 
 import com.tony.router.route.IRoute;
 import com.tony.router.router.ActivityRouter;
@@ -20,7 +18,7 @@ public class RouterManager {
     private static final String TAG = "RouterManager";
     private static RouterManager mInstance = new RouterManager();
     private static List<IRouter> mRouters = new ArrayList<>();
-    private Activity mActivity;
+    public static final String KEY_URL = "key_router_url";
 
     private RouterManager() {
     }
@@ -29,27 +27,16 @@ public class RouterManager {
         return mInstance;
     }
 
-    public RouterManager with(Activity activity) {
-        mActivity = activity;
-        return this;
-    }
-
-    public synchronized void initActivityRouter(Context context, IActivityRouteTableInitializer initializer, String... schemes) {
+    public void initActivityRouter(Context context, IActivityRouteTableInitializer initializer, String... schemes) {
         ActivityRouter router = ActivityRouter.getInstance();
-        if (initializer == null) {
-            router.init(context);
-        } else {
-            router.init(context, initializer);
-        }
+        router.init(context, initializer);
         if (schemes != null && schemes.length > 0) {
-            //重新设置match的schemes
             router.setMatchSchemes(schemes);
         }
-        //将初始化结束的router添加到mRouters中
         addRouter(router);
     }
 
-    public synchronized void initBrowserRouter(Context context) {
+    public void initBrowserRouter(Context context) {
         BrowserRouter browserRouter = BrowserRouter.getInstance();
         browserRouter.init(context);
         addRouter(browserRouter);
@@ -60,7 +47,7 @@ public class RouterManager {
      *
      * @param router
      */
-    public synchronized void addRouter(IRouter router) {
+    public void addRouter(IRouter router) {
         //不可靠，需要一种更强硬的方案,
         if (router != null) {
             for (IRouter r : mRouters) {
@@ -70,21 +57,17 @@ public class RouterManager {
                 }
             }
             mRouters.add(router);
-        } else {
-            Log.e(TAG, "The router is null");
         }
     }
 
     // TODO: 10/27/16 和添加一样需要优化
-    public synchronized void removeRouter(IRouter router) {
+    public void removeRouter(IRouter router) {
         if (router != null) {
             for (IRouter r : mRouters) {
                 if (r.getClass().equals(router.getClass())) {
                     mRouters.remove(r);
                 }
             }
-        } else {
-            throw new NullPointerException("The router is null");
         }
     }
 
@@ -126,9 +109,9 @@ public class RouterManager {
         return false;
     }
 
-    public boolean open(Context context, String url){
-        for(IRouter router : mRouters){
-            if(router.canOpen(url)){
+    public boolean open(Context context, String url) {
+        for (IRouter router : mRouters) {
+            if (router.canOpen(url)) {
                 return router.open(context, url);
             }
         }

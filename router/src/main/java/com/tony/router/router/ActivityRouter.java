@@ -6,73 +6,54 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.Log;
 
+import com.tony.router.RouterManager;
 import com.tony.router.exception.RouteNotFoundException;
 import com.tony.router.route.ActivityRoute;
 import com.tony.router.route.IRoute;
-import com.tony.router.rule.ActivityRouteRuleBuilder;
 import com.tony.router.util.RouterUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by tony on 10/26/16.
  */
 public class ActivityRouter extends AbsRouter {
-    private static final String TAG = "ActivityRouter";
     private static ActivityRouter mActivityRouter = new ActivityRouter();
-
     private static final String DEFAULT_SCHEME = "activity";
-    private static List<String> MATCH_SCHEMES = new ArrayList<>();
-    public static final String KEY_URL = "key_and_activity_router_url";
+    private static Set<String> MATCH_SCHEMES = new HashSet<>();
 
     static {
+        //默认scheme
         MATCH_SCHEMES.add(DEFAULT_SCHEME);
-        CAN_OPEN_ROUTE = ActivityRoute.class;
     }
 
-    private Context mBaseContext;
-    Map<String, Class<? extends Activity>> mRouteTable = new HashMap<>();
+    //如果没有提供context 当使用全局的ApplicationContent
+    private Context mApplicationContent;
+
+    //所有路由的表
+    private Map<String, Class<? extends Activity>> mRouteTable = new HashMap<>();
 
     public static ActivityRouter getInstance() {
         return mActivityRouter;
     }
 
-    public void init(Context appContext, IActivityRouteTableInitializer initializer) {
-        mBaseContext = appContext;
-        initActivityRouterTable(initializer);
-    }
-
-
     /**
-     * 初始化 主要是移除mRouteTable中无效的rul
-     * @param appContext
+     * 初始化
+     *
+     * @param appContext  全局的context
+     * @param initializer 路由表
      */
-    public void init(Context appContext) {
-        mBaseContext = appContext;
-        for (String pathRule : mRouteTable.keySet()) {
-            boolean isValid = ActivityRouteRuleBuilder.isActivityRuleValid(pathRule);
-            if (!isValid) {
-                mRouteTable.remove(pathRule);
-            }
-        }
-    }
-
-    public void initActivityRouterTable(IActivityRouteTableInitializer initializer) {
+    public void init(Context appContext, IActivityRouteTableInitializer initializer) {
+        mApplicationContent = appContext;
         if (initializer != null) {
             initializer.initRouterTable(mRouteTable);
         }
-        for (String pathRule : mRouteTable.keySet()) {
-            boolean isValid = ActivityRouteRuleBuilder.isActivityRuleValid(pathRule);
-            if (!isValid) {
-                mRouteTable.remove(pathRule);
-            }
-        }
+        //todo 直接针对mRouteTable不安全 后期可添加验证规则
     }
 
     @Override
@@ -82,44 +63,32 @@ public class ActivityRouter extends AbsRouter {
 
     @Override
     public boolean canOpen(String url) {
-        for (String scheme : MATCH_SCHEMES) {
-            if (TextUtils.equals(scheme, RouterUtils.getScheme(url))) {
-                return true;
-            }
-        }
-        return false;
+        return MATCH_SCHEMES.contains(RouterUtils.getScheme(url));
     }
 
     @Override
     public boolean canOpen(IRoute route) {
         if (route != null) {
-            for (String scheme : MATCH_SCHEMES) {
-                if (TextUtils.equals(scheme, route.getScheme())) {
-                    return true;
-                }
-            }
+            return MATCH_SCHEMES.contains(route.getScheme());
         }
         return false;
     }
 
-    public List<String> getMatchSchemes() {
+    public Set<String> getMatchSchemes() {
         return MATCH_SCHEMES;
     }
 
     public void setMatchSchemes(String... schemes) {
         MATCH_SCHEMES.clear();
-        List<String> list = Arrays.asList(schemes);
-        MATCH_SCHEMES.addAll(list);
+        for (String scheme : schemes) {
+            if (!TextUtils.isEmpty(scheme)) {
+                MATCH_SCHEMES.add(scheme);
+            }
+        }
     }
 
     public void addMatchSchemes(String scheme) {
         MATCH_SCHEMES.add(scheme);
-    }
-
-
-    @Override
-    public Class<? extends IRoute> getCanOpenRoute() {
-        return CAN_OPEN_ROUTE;
     }
 
 
@@ -131,19 +100,20 @@ public class ActivityRouter extends AbsRouter {
             try {
                 switch (activityRoute.getStartType()) {
                     case ActivityRoute.START_ACTIVITY:
-                        open(activityRoute.getActivity(), activityRoute);
+                        openActivity(activityRoute.getActivity(), activityRoute);
                         canOpen = true;
                         break;
                     case ActivityRoute.START_ACTIVITY_FOR_RESULT:
-                        openForResult(activityRoute, activityRoute.getActivity(), activityRoute.getRequestCode());
+                        openActivityForResult(activityRoute.getActivity(), activityRoute, activityRoute.getRequestCode());
                         canOpen = true;
                         break;
                     default:
-                        open(activityRoute.getActivity(), activityRoute);
+                        openActivity(activityRoute.getActivity(), activityRoute);
                         canOpen = true;
                         break;
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 canOpen = false;
             }
         }
@@ -159,12 +129,12 @@ public class ActivityRouter extends AbsRouter {
     public boolean open(Context context, String url) {
         IRoute route = getRoute(url);
         if (route instanceof ActivityRoute) {
-            ActivityRoute aRoute = (ActivityRoute) route;
+            ActivityRoute activityRoute = (ActivityRoute) route;
             try {
-                open(context, aRoute);
+                openActivity(context, activityRoute);
                 return true;
             } catch (Exception e) {
-                Log.e(TAG, e.toString());
+                e.printStackTrace();
             }
         }
         return false;
@@ -172,12 +142,8 @@ public class ActivityRouter extends AbsRouter {
 
     /**
      * 打开的具体操作
-     *
-     * @param route
-     * @param context
-     * @throws RouteNotFoundException
      */
-    protected void open(Context context, ActivityRoute route) throws RouteNotFoundException {
+    protected void openActivity(Context context, ActivityRoute route) throws RouteNotFoundException {
         //创建intent
         Intent intent = match(route);
         if (intent == null) {
@@ -186,7 +152,7 @@ public class ActivityRouter extends AbsRouter {
         if (context == null) {
             //使用app启动  重新设置flag
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | route.getFlags());
-            mBaseContext.startActivity(intent);
+            mApplicationContent.startActivity(intent);
         } else {
             //正常启动
             context.startActivity(intent);
@@ -195,13 +161,8 @@ public class ActivityRouter extends AbsRouter {
 
     /**
      * 打开的具体操作
-     *
-     * @param route
-     * @param activity
-     * @param requestCode
-     * @throws RouteNotFoundException
      */
-    protected void openForResult(ActivityRoute route, Activity activity, int requestCode) throws RouteNotFoundException {
+    protected void openActivityForResult(Activity activity, ActivityRoute route, int requestCode) throws RouteNotFoundException {
         Intent intent = match(route);
         if (intent == null) {
             throw new RouteNotFoundException(route.getUrl());
@@ -211,9 +172,6 @@ public class ActivityRouter extends AbsRouter {
 
     /**
      * 在routrtable里面查找存才的activity class所对应的url
-     *
-     * @param route
-     * @return String the match routePath
      */
     @Nullable
     private String findMatchedRoute(ActivityRoute route) {
@@ -245,7 +203,10 @@ public class ActivityRouter extends AbsRouter {
         return null;
     }
 
-    private Intent putExtras(String url, Intent intent) {
+    /**
+     * 拼接url中存在的queryParams
+     */
+    private Intent putExtras(Intent intent, String url) {
         Map<String, String> queryParams = RouterUtils.getQueryParameter(url);
         for (String key : queryParams.keySet()) {
             intent.putExtra(key, queryParams.get(key));
@@ -253,18 +214,17 @@ public class ActivityRouter extends AbsRouter {
         return intent;
     }
 
-    private Intent putBundle(Bundle bundle, Intent intent) {
+    /**
+     * 添加bundle
+     */
+    private Intent putBundle(Intent intent, Bundle bundle) {
         intent.putExtras(bundle);
         return intent;
     }
 
     /**
      * 从routemap中找出可以match的class 并且赋值
-     *
-     * @param route
-     * @return
      */
-    @Nullable
     private Intent match(ActivityRoute route) {
         //从routemap中寻找匹配的url
         String matchedRoute = findMatchedRoute(route);
@@ -273,22 +233,19 @@ public class ActivityRouter extends AbsRouter {
         }
         //根据找出的rul找到activity的class
         Class<? extends Activity> matchedActivity = mRouteTable.get(matchedRoute);
-        Intent intent = new Intent(mBaseContext, matchedActivity);
-        //find the key value in the path
-//        intent = setKeyValueInThePath(matchedRoute, route.getUrl(), intent);
+        Intent intent = new Intent(mApplicationContent, matchedActivity);
         //找到query中的值放到intent中
-        intent = putExtras(route.getUrl(), intent);
+        intent = putExtras(intent, route.getUrl());
         //找到设置的bundle放到intent中
-        intent = putBundle(route.getExtras(), intent);
+        intent = putBundle(intent, route.getExtras());
         //setflags
         intent.setFlags(route.getFlags());
         //再网intent中放置一个标记key
-        intent.putExtra(KEY_URL, route.getUrl());
+        intent.putExtra(RouterManager.KEY_URL, route.getUrl());
         return intent;
     }
 
-
-    public static String getKeyUrl() {
-        return KEY_URL;
+    public String getKeyUrl() {
+        return RouterManager.KEY_URL;
     }
 }

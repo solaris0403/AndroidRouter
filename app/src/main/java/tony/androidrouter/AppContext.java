@@ -18,10 +18,10 @@ public class AppContext extends Application{
         Router.initActivityRouter(this, new IActivityRouteTableInitializer() {
             @Override
             public void initRouterTable(Map<String, Class<? extends Activity>> router) {
-                router.put("activity://main", MainActivity.class);
-                router.put("activity://second", SecondActivity.class);
+                router.put("zx://activity/main", MainActivity.class);
+                router.put("zx://activity/second", SecondActivity.class);
             }
-        });
+        }, "zx");
         Router.initBrowserRouter(this);
     }
 }

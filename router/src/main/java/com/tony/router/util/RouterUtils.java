@@ -52,22 +52,6 @@ public class RouterUtils {
         return url;
     }
 
-//    public static void setupReferrer(Context context, Intent intent) {
-//        if (context != null && context instanceof Activity) {
-//            Route currentRoute = parseCurrentRoute(context);
-//            intent.putExtra(TRouter.URL_ROUTER_REFERRER, currentRoute);
-//        }
-//    }
-//
-//    public static Route parseStartedRoute(Context context) {
-//        if (context != null && context instanceof Activity) {
-//            Intent startedIntent = ((Activity) context).getIntent();
-//            if (startedIntent.hasExtra(TRouter.URL_ROUTER_REFERRER)) {
-//                return startedIntent.getParcelableExtra(TRouter.URL_ROUTER_REFERRER);
-//            }
-//        }
-//        return null;
-//    }
 //
 //    public static Route parseCurrentRoute(Context context) {
 //        if (context != null && context instanceof Activity) {
@@ -91,11 +75,8 @@ public class RouterUtils {
 //
 //    /**
 //     * 是否已经正确匹配到目标Activity，匹配成功则跳转，失败则自己处理
-//     * <p/>
 //     * 由于系统在匹配过程中，当匹配到多个时，会依匹配符合程度按循序排序好返回给我们，
 //     * 不过这时候难免会有第三方包的Activity，需优先匹配本应用包中的Activity，本包中没有再返回系统最匹配的
-//     *
-//     * @return
 //     */
 //    public static ResolveInfo queryActivity(Context context, Intent intent) {
 //        if (context == null || intent == null)
@@ -119,27 +100,5 @@ public class RouterUtils {
 //            }
 //        }
 //        return resolveInfoList.get(0);
-//    }
-//
-//    public static String getScheme(Uri uri) {
-//        if (uri == null)
-//            return null;
-//        return uri.getScheme();
-//    }
-//
-//    public static String getHost(Uri uri) {
-//        if (uri == null)
-//            return null;
-//        return uri.getHost();
-//    }
-//
-//    public static String getPath(Uri uri) {
-//        if (uri == null)
-//            return null;
-//        String path = uri.getPath();
-//        if (TextUtils.isEmpty(path))
-//            return null;
-//        path = path.replace("/", "");
-//        return path;
 //    }
 }

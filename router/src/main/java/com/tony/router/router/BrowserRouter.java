@@ -12,34 +12,31 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 
-/**
- * Created by kris on 16/3/17.
- */
 public class BrowserRouter extends AbsRouter {
-    private static final Set<String> SCHEMES_CAN_OPEN = new LinkedHashSet<>();
+    private static final Set<String> MATCH_SCHEMES = new LinkedHashSet<>();
 
-    private Context mBaseContext;
+    private Context mApplicationContext;
 
     static BrowserRouter mBrowserRouter = new BrowserRouter();  //浏览器
 
 
     static {
-        SCHEMES_CAN_OPEN.add("https");
-        SCHEMES_CAN_OPEN.add("http");
+        MATCH_SCHEMES.add("https");
+        MATCH_SCHEMES.add("http");
     }
 
-    public static BrowserRouter getInstance(){
+    public static BrowserRouter getInstance() {
         return mBrowserRouter;
     }
 
-    public void init(Context context){
-        mBaseContext = context;
+    public void init(Context context) {
+        mApplicationContext = context;
     }
 
 
     @Override
     public boolean open(IRoute route) {
-        return open(mBaseContext, route);
+        return openBrowser(mApplicationContext, route);
     }
 
     @Override
@@ -50,27 +47,23 @@ public class BrowserRouter extends AbsRouter {
 
     @Override
     public boolean open(Context context, String url) {
-        return open(context, getRoute(url));
+        return openBrowser(context, getRoute(url));
     }
 
     @Override
     public boolean canOpen(String url) {
-        return SCHEMES_CAN_OPEN.contains(RouterUtils.getScheme(url));
+        return MATCH_SCHEMES.contains(RouterUtils.getScheme(url));
     }
 
     @Override
     public boolean canOpen(IRoute route) {
-        return getCanOpenRoute().equals(route.getClass());
+        return MATCH_SCHEMES.contains(route.getScheme());
     }
 
-    @Override
-    public Class<? extends IRoute> getCanOpenRoute() {
-        return BrowserRoute.class;
-    }
-
-    protected boolean open(Context context, IRoute route){
+    protected boolean openBrowser(Context context, IRoute route) {
         Uri uri = Uri.parse(route.getUrl());
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        //浏览器有自己的flag 不过保险起见 这边也要设置
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
         return true;
@@ -78,6 +71,6 @@ public class BrowserRouter extends AbsRouter {
 
     @Override
     public BrowserRoute getRoute(String url) {
-        return new BrowserRoute.Builder(this).setUrl(url).build();
+        return new BrowserRoute.Builder(url).build();
     }
 }
