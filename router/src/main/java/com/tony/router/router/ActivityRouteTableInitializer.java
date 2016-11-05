@@ -7,6 +7,6 @@ import java.util.Map;
 /**
  * 路由表初始化
  */
-public interface IActivityRouteTableInitializer {
+public interface ActivityRouteTableInitializer{
     void initRouterTable(Map<String, Class<? extends Activity>> router);
 }

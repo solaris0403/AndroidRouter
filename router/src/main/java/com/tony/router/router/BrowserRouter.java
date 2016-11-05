@@ -60,6 +60,11 @@ public class BrowserRouter extends AbsRouter {
         return MATCH_SCHEMES.contains(route.getScheme());
     }
 
+    @Override
+    public boolean canOpen(Context context, String url) {
+        return MATCH_SCHEMES.contains(url);
+    }
+
     protected boolean openBrowser(Context context, IRoute route) {
         Uri uri = Uri.parse(route.getUrl());
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);

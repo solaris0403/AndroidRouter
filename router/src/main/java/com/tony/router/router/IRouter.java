@@ -25,4 +25,6 @@ public interface IRouter {
     boolean canOpen(String url);
 
     boolean canOpen(IRoute route);
+
+    boolean canOpen(Context context, String url);
 }

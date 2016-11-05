@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 生成基本元素
+ * 生成基本元素 且不能修改
  */
 public abstract class AbsRoute implements IRoute {
     private String mUrl;

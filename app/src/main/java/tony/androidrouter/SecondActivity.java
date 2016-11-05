@@ -11,7 +11,7 @@ public class SecondActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_second);
         Intent intent= getIntent();
-        String a = intent.getStringExtra("a");
+        int a = intent.getIntExtra("key", 0);
         Bundle bundle = intent.getExtras();
     }
 }

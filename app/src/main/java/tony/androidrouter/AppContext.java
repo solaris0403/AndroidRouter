@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 
 import com.tony.router.Router;
-import com.tony.router.router.IActivityRouteTableInitializer;
+import com.tony.router.router.ActivityRouteTableInitializer;
 
 import java.util.Map;
 
@@ -15,13 +15,15 @@ public class AppContext extends Application{
     @Override
     public void onCreate() {
         super.onCreate();
-        Router.initActivityRouter(this, new IActivityRouteTableInitializer() {
+        Router.initActivityRouter(this, new ActivityRouteTableInitializer() {
             @Override
             public void initRouterTable(Map<String, Class<? extends Activity>> router) {
                 router.put("zx://activity/main", MainActivity.class);
-                router.put("zx://activity/second", SecondActivity.class);
+//                router.put("zx://activity/second", SecondActivity.class);
             }
         }, "zx");
         Router.initBrowserRouter(this);
     }
+
+
 }

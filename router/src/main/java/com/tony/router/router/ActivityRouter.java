@@ -1,20 +1,26 @@
 package com.tony.router.router;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 
 import com.tony.router.RouterManager;
 import com.tony.router.exception.RouteNotFoundException;
 import com.tony.router.route.ActivityRoute;
 import com.tony.router.route.IRoute;
+import com.tony.router.matcher.ActivityManifestMatcher;
+import com.tony.router.matcher.ActivitySchemeMatcher;
 import com.tony.router.util.RouterUtils;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,16 +30,19 @@ import java.util.Set;
  */
 public class ActivityRouter extends AbsRouter {
     private static ActivityRouter mActivityRouter = new ActivityRouter();
-    private static final String DEFAULT_SCHEME = "activity";
-    private static Set<String> MATCH_SCHEMES = new HashSet<>();
-
-    static {
-        //默认scheme
-        MATCH_SCHEMES.add(DEFAULT_SCHEME);
-    }
-
+    private boolean isAllowEscape = true;//打开外部界面
+    //目前只有两个匹配器
+    private ActivitySchemeMatcher mActivitySchemeMatcher;
+    private ActivityManifestMatcher mActivityManifestMatcher;
     //如果没有提供context 当使用全局的ApplicationContent
     private Context mApplicationContent;
+
+    public ActivityRouter() {
+        //初始化匹配器
+        mActivitySchemeMatcher = new ActivitySchemeMatcher();
+        mActivityManifestMatcher = new ActivityManifestMatcher();
+        mActivitySchemeMatcher.setMatcher(mActivityManifestMatcher);
+    }
 
     //所有路由的表
     private Map<String, Class<? extends Activity>> mRouteTable = new HashMap<>();
@@ -48,7 +57,7 @@ public class ActivityRouter extends AbsRouter {
      * @param appContext  全局的context
      * @param initializer 路由表
      */
-    public void init(Context appContext, IActivityRouteTableInitializer initializer) {
+    public void init(Context appContext, ActivityRouteTableInitializer initializer) {
         mApplicationContent = appContext;
         if (initializer != null) {
             initializer.initRouterTable(mRouteTable);
@@ -58,37 +67,37 @@ public class ActivityRouter extends AbsRouter {
 
     @Override
     public IRoute getRoute(String url) {
-        return new ActivityRoute.Builder(this).setUrl(url).build();
+        return new ActivityRoute.Builder(url).build();
     }
 
     @Override
     public boolean canOpen(String url) {
-        return MATCH_SCHEMES.contains(RouterUtils.getScheme(url));
+        return mActivitySchemeMatcher.match(mApplicationContent,url);
     }
 
     @Override
     public boolean canOpen(IRoute route) {
-        if (route != null) {
-            return MATCH_SCHEMES.contains(route.getScheme());
+        if (route != null){
+            return mActivitySchemeMatcher.match(mApplicationContent, route);
         }
         return false;
     }
 
+    @Override
+    public boolean canOpen(Context context, String url) {
+        return mActivitySchemeMatcher.match(context,url);
+    }
+
     public Set<String> getMatchSchemes() {
-        return MATCH_SCHEMES;
+        return mActivitySchemeMatcher.getMatchSchemes();
     }
 
     public void setMatchSchemes(String... schemes) {
-        MATCH_SCHEMES.clear();
-        for (String scheme : schemes) {
-            if (!TextUtils.isEmpty(scheme)) {
-                MATCH_SCHEMES.add(scheme);
-            }
-        }
+        mActivitySchemeMatcher.setMatchSchemes(schemes);
     }
 
     public void addMatchSchemes(String scheme) {
-        MATCH_SCHEMES.add(scheme);
+        mActivitySchemeMatcher.addMatchSchemes(scheme);
     }
 
 
@@ -172,9 +181,11 @@ public class ActivityRouter extends AbsRouter {
 
     /**
      * 在routrtable里面查找存才的activity class所对应的url
+     * 如果没有的话则开始从xml中找
+     * 如果有外部链接也被找到,则优先使用内部链接
      */
     @Nullable
-    private String findMatchedRoute(ActivityRoute route) {
+    private String matchRouteTable(ActivityRoute route) {
         //根据route获取所有path
         List<String> givenPathSegs = route.getPath();
         OutLoop:
@@ -203,6 +214,25 @@ public class ActivityRouter extends AbsRouter {
         return null;
     }
 
+    // TODO: 2016/11/5 需要重新优化匹配策略  如果成功的话加到table里面会提高效率?????????
+    public Intent matchAndroidManifest(ActivityRoute route) {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        if (!isAllowEscape) {
+            intent.setPackage(mApplicationContent.getPackageName());
+        }
+        intent.setData(Uri.parse(route.getUrl()));
+        ResolveInfo targetActivity = RouterUtils.queryActivity(mApplicationContent, intent);
+        if (targetActivity == null){
+            return null;
+        }
+        String packageName = targetActivity.activityInfo.packageName;
+        String className = targetActivity.activityInfo.name;
+        intent.setClassName(packageName, className);
+        return intent;
+    }
+
     /**
      * 拼接url中存在的queryParams
      */
@@ -226,14 +256,20 @@ public class ActivityRouter extends AbsRouter {
      * 从routemap中找出可以match的class 并且赋值
      */
     private Intent match(ActivityRoute route) {
+        Intent intent = null;
         //从routemap中寻找匹配的url
-        String matchedRoute = findMatchedRoute(route);
-        if (matchedRoute == null) {
-            return null;
+        String matchedRoute = matchRouteTable(route);
+        if (matchedRoute != null){
+            //根据找出的rul找到activity的class
+            Class<? extends Activity> matchedActivity = mRouteTable.get(matchedRoute);
+            intent = new Intent(mApplicationContent, matchedActivity);
+        }else{
+            //可以通过xml查找
+            intent = matchAndroidManifest(route);
+            if (intent == null){
+                return null;
+            }
         }
-        //根据找出的rul找到activity的class
-        Class<? extends Activity> matchedActivity = mRouteTable.get(matchedRoute);
-        Intent intent = new Intent(mApplicationContent, matchedActivity);
         //找到query中的值放到intent中
         intent = putExtras(intent, route.getUrl());
         //找到设置的bundle放到intent中

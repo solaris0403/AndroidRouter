@@ -1,20 +1,17 @@
 package com.tony.router.cache;
 
+import android.util.LruCache;
+
 import com.tony.router.route.IRoute;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 不需要
+ * url生成route,且为内部数据,所以只能根据url来缓存route
  */
-public class RouteCache{
-    private static Map<Class<? extends IRoute>, IRoute> mRouteCache = new HashMap<>();
-    public static IRoute get(String key) {
-        return mRouteCache.get(key);
-    }
-
-    public static void put(Class<? extends IRoute> key, IRoute route) {
-        mRouteCache.put(key, route);
+public class RouteCache extends LruCache<String, IRoute>{
+    public RouteCache(int maxSize) {
+        super(maxSize);
     }
 }

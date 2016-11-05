@@ -5,7 +5,7 @@ import android.content.Context;
 import com.tony.router.route.IRoute;
 import com.tony.router.router.ActivityRouter;
 import com.tony.router.router.BrowserRouter;
-import com.tony.router.router.IActivityRouteTableInitializer;
+import com.tony.router.router.ActivityRouteTableInitializer;
 import com.tony.router.router.IRouter;
 
 import java.util.ArrayList;
@@ -18,7 +18,8 @@ public class RouterManager {
     private static final String TAG = "RouterManager";
     private static RouterManager mInstance = new RouterManager();
     private static List<IRouter> mRouters = new ArrayList<>();
-    public static final String KEY_URL = "key_router_url";
+    public static final String KEY_URL = "key_route_url";
+    public static final String KEY_FROM = "key_route_from";
 
     private RouterManager() {
     }
@@ -27,7 +28,7 @@ public class RouterManager {
         return mInstance;
     }
 
-    public void initActivityRouter(Context context, IActivityRouteTableInitializer initializer, String... schemes) {
+    public void initActivityRouter(Context context, ActivityRouteTableInitializer initializer, String... schemes) {
         ActivityRouter router = ActivityRouter.getInstance();
         router.init(context, initializer);
         if (schemes != null && schemes.length > 0) {
@@ -109,9 +110,11 @@ public class RouterManager {
         return false;
     }
 
+    //打开的时候需要针对scheme作匹配 但是无法对xml中的匹配
+    //并且根据filter来识别的一般是activity,所以该逻辑应该又activityrouter来实现
     public boolean open(Context context, String url) {
         for (IRouter router : mRouters) {
-            if (router.canOpen(url)) {
+            if (router.canOpen(context, url)) {
                 return router.open(context, url);
             }
         }

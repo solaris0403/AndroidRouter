@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.tony.router.Router;
+import com.tony.router.route.ActivityRoute;
 import com.tony.router.router.ActivityRouter;
 
 import java.util.Set;
@@ -20,15 +21,8 @@ public class MainActivity extends AppCompatActivity {
         mBtnSecond.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Router.open(MainActivity.this, "activity://second");
-//                ActivityRoute route = new ActivityRoute.Builder(ActivityRouter.getInstance()).build();
-//                route.open();
-//                Router.open(route);
-//                Log.e("123", String.valueOf(RouterMapUtil.getAllClassByAnnotation(RouterMap.class, "tony.androidrouter").size()));
-//                Random random = new Random();
-//                Router.getRoute("zx://activity").open();
-                Router.open(MainActivity.this, "zx://activity/second");
-                Set set = ActivityRouter.getInstance().getMatchSchemes();
+                ActivityRoute route = new ActivityRoute.Builder("zx://activity/second").putInt("key", 2222).build();
+                Router.open(route);
             }
         });
     }

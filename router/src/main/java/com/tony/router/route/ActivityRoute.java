@@ -158,8 +158,7 @@ public class ActivityRoute extends AbsRoute {
         }
 
         public ActivityRoute build() {
-            //todo 在这里可以针对Route进行复用池的设计  当前先直接实例化
-            ActivityRoute route = new ActivityRoute(mUrl);
+            ActivityRoute route = RouteFactory.getInstance().getActivityRoute(mUrl);
             switch (mStartType) {
                 case START_ACTIVITY:
                     route.startActivity(mAct);
