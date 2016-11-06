@@ -4,25 +4,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
+import com.tony.router.matcher.BrowserMatcher;
 import com.tony.router.route.BrowserRoute;
 import com.tony.router.route.IRoute;
-import com.tony.router.util.RouterUtils;
-
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 
 public class BrowserRouter extends AbsRouter {
-    private static final Set<String> MATCH_SCHEMES = new LinkedHashSet<>();
-
     private Context mApplicationContext;
+    private static BrowserRouter mBrowserRouter = new BrowserRouter();  //浏览器
+    private BrowserMatcher mBrowserMatcher;
 
-    static BrowserRouter mBrowserRouter = new BrowserRouter();  //浏览器
-
-
-    static {
-        MATCH_SCHEMES.add("https");
-        MATCH_SCHEMES.add("http");
+    public BrowserRouter() {
+        mBrowserMatcher = new BrowserMatcher();
     }
 
     public static BrowserRouter getInstance() {
@@ -41,8 +34,7 @@ public class BrowserRouter extends AbsRouter {
 
     @Override
     public boolean open(String url) {
-        open(getRoute(url));
-        return true;
+        return open(getRoute(url));
     }
 
     @Override
@@ -52,21 +44,38 @@ public class BrowserRouter extends AbsRouter {
 
     @Override
     public boolean canOpen(String url) {
-        return MATCH_SCHEMES.contains(RouterUtils.getScheme(url));
+        if (mFilter != null){
+            url = mFilter.doFilter(url);
+        }
+        return mBrowserMatcher.match(mApplicationContext, url);
     }
 
     @Override
     public boolean canOpen(IRoute route) {
-        return MATCH_SCHEMES.contains(route.getScheme());
+        if (route != null) {
+            String url = route.getUrl();
+            if (mFilter != null) {
+                url = mFilter.doFilter(url);
+            }
+            return mBrowserMatcher.match(mApplicationContext, url);
+        }
+        return false;
     }
 
     @Override
     public boolean canOpen(Context context, String url) {
-        return MATCH_SCHEMES.contains(url);
+        if (mFilter != null){
+            url = mFilter.doFilter(url);
+        }
+        return mBrowserMatcher.match(context, url);
     }
 
     protected boolean openBrowser(Context context, IRoute route) {
-        Uri uri = Uri.parse(route.getUrl());
+        String url = route.getUrl();
+        if (mFilter != null){
+            url = mFilter.doFilter(url);
+        }
+        Uri uri = Uri.parse(url);
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         //浏览器有自己的flag 不过保险起见 这边也要设置
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

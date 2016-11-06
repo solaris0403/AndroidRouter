@@ -47,17 +47,17 @@ public class RouterUtils {
         return parameters;
     }
 
-    public static String addQueryParameters(String url, String key, String value){
-        try{
+    public static String addQueryParameters(String url, String key, String value) {
+        try {
             Uri uri = Uri.parse(url);
             return uri.buildUpon().appendQueryParameter(key, value).build().toString();
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return url;
     }
 
-    public static boolean queryActivity(Context context, boolean isAllowEscape, String url){
+    public static boolean queryActivity(Context context, boolean isAllowEscape, String url) {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_VIEW);
         intent.addCategory(Intent.CATEGORY_DEFAULT);
@@ -75,16 +75,18 @@ public class RouterUtils {
      * 不过这时候难免会有第三方包的Activity，需优先匹配本应用包中的Activity，本包中没有再返回系统最匹配的
      */
     public static ResolveInfo queryActivity(Context context, Intent intent) {
-        if (context == null || intent == null){
+        if (context == null || intent == null) {
             return null;
         }
         PackageManager packageManager = context.getApplicationContext().getPackageManager();
         List<ResolveInfo> resolveInfoList = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
-        if (resolveInfoList == null || resolveInfoList.size() == 0)
+        if (resolveInfoList == null || resolveInfoList.size() == 0) {
             return null;
+        }
         int size = resolveInfoList.size();
-        if (size == 1)
+        if (size == 1) {
             return resolveInfoList.get(0);
+        }
         String appPackageName = context.getApplicationContext().getPackageName();
         for (int i = 0; i < size; i++) {
             ResolveInfo resolveInfo = resolveInfoList.get(i);

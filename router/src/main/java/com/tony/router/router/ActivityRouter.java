@@ -1,23 +1,22 @@
 package com.tony.router.router;
 
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 
 import com.tony.router.RouterManager;
 import com.tony.router.exception.RouteNotFoundException;
-import com.tony.router.route.ActivityRoute;
-import com.tony.router.route.IRoute;
 import com.tony.router.matcher.ActivityManifestMatcher;
 import com.tony.router.matcher.ActivitySchemeMatcher;
+import com.tony.router.matcher.IMatcherHandler;
+import com.tony.router.route.ActivityRoute;
+import com.tony.router.route.IRoute;
+import com.tony.router.util.RouterLogUtils;
 import com.tony.router.util.RouterUtils;
 
 import java.util.HashMap;
@@ -28,9 +27,8 @@ import java.util.Set;
 /**
  * Created by tony on 10/26/16.
  */
-public class ActivityRouter extends AbsRouter {
+public class ActivityRouter extends AbsRouter implements IMatcherHandler {
     private static ActivityRouter mActivityRouter = new ActivityRouter();
-    private boolean isAllowEscape = true;//打开外部界面
     //目前只有两个匹配器
     private ActivitySchemeMatcher mActivitySchemeMatcher;
     private ActivityManifestMatcher mActivityManifestMatcher;
@@ -72,32 +70,50 @@ public class ActivityRouter extends AbsRouter {
 
     @Override
     public boolean canOpen(String url) {
-        return mActivitySchemeMatcher.match(mApplicationContent,url);
+        if (mFilter != null) {
+            url = mFilter.doFilter(url);
+        }
+        return mActivitySchemeMatcher.match(mApplicationContent, url);
     }
 
     @Override
     public boolean canOpen(IRoute route) {
-        if (route != null){
-            return mActivitySchemeMatcher.match(mApplicationContent, route);
+        if (route != null) {
+            String url = route.getUrl();
+            if (mFilter != null) {
+                url = mFilter.doFilter(url);
+            }
+            return mActivitySchemeMatcher.match(mApplicationContent, url);
         }
         return false;
     }
 
     @Override
     public boolean canOpen(Context context, String url) {
-        return mActivitySchemeMatcher.match(context,url);
+        if (mFilter != null) {
+            url = mFilter.doFilter(url);
+        }
+        return mActivitySchemeMatcher.match(context, url);
     }
 
+    @Override
     public Set<String> getMatchSchemes() {
         return mActivitySchemeMatcher.getMatchSchemes();
     }
 
+    @Override
     public void setMatchSchemes(String... schemes) {
         mActivitySchemeMatcher.setMatchSchemes(schemes);
     }
 
+    @Override
     public void addMatchSchemes(String scheme) {
         mActivitySchemeMatcher.addMatchSchemes(scheme);
+    }
+
+    @Override
+    public void removeMatchSchemes(String scheme) {
+        mActivitySchemeMatcher.removeMatchSchemes(scheme);
     }
 
 
@@ -185,16 +201,16 @@ public class ActivityRouter extends AbsRouter {
      * 如果有外部链接也被找到,则优先使用内部链接
      */
     @Nullable
-    private String matchRouteTable(ActivityRoute route) {
+    private String matchRouteTable(String url) {
         //根据route获取所有path
-        List<String> givenPathSegs = route.getPath();
+        List<String> givenPathSegs = RouterUtils.getPathSegments(url);
         OutLoop:
         //遍历mRouteTable中所有url
         for (String routeUrl : mRouteTable.keySet()) {
             //获得每一个url的path列表
             List<String> routePathSegs = RouterUtils.getPathSegments(routeUrl);
             //针对host进行match
-            if (!TextUtils.equals(RouterUtils.getHost(routeUrl), route.getHost())) {
+            if (!TextUtils.equals(RouterUtils.getHost(routeUrl), RouterUtils.getHost(url))) {
                 continue;
             }
             //针对path数量进行match
@@ -215,16 +231,16 @@ public class ActivityRouter extends AbsRouter {
     }
 
     // TODO: 2016/11/5 需要重新优化匹配策略  如果成功的话加到table里面会提高效率?????????
-    public Intent matchAndroidManifest(ActivityRoute route) {
+    public Intent matchAndroidManifest(String url) {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_VIEW);
         intent.addCategory(Intent.CATEGORY_DEFAULT);
-        if (!isAllowEscape) {
+        if (!mActivityManifestMatcher.isAllowEscape()) {
             intent.setPackage(mApplicationContent.getPackageName());
         }
-        intent.setData(Uri.parse(route.getUrl()));
+        intent.setData(Uri.parse(url));
         ResolveInfo targetActivity = RouterUtils.queryActivity(mApplicationContent, intent);
-        if (targetActivity == null){
+        if (targetActivity == null) {
             return null;
         }
         String packageName = targetActivity.activityInfo.packageName;
@@ -258,30 +274,39 @@ public class ActivityRouter extends AbsRouter {
     private Intent match(ActivityRoute route) {
         Intent intent = null;
         //从routemap中寻找匹配的url
-        String matchedRoute = matchRouteTable(route);
-        if (matchedRoute != null){
+        String matchedRoute = matchRouteTable(mFilter != null ? mFilter.doFilter(route.getUrl()) : route.getUrl());
+        if (matchedRoute != null) {
             //根据找出的rul找到activity的class
             Class<? extends Activity> matchedActivity = mRouteTable.get(matchedRoute);
             intent = new Intent(mApplicationContent, matchedActivity);
-        }else{
+        } else {
             //可以通过xml查找
-            intent = matchAndroidManifest(route);
-            if (intent == null){
+            intent = matchAndroidManifest(mFilter != null ? mFilter.doFilter(route.getUrl()) : route.getUrl());
+            if (intent == null) {
                 return null;
             }
         }
         //找到query中的值放到intent中
-        intent = putExtras(intent, route.getUrl());
+        intent = putExtras(intent, mFilter != null ? mFilter.doFilter(route.getUrl()) : route.getUrl());
         //找到设置的bundle放到intent中
         intent = putBundle(intent, route.getExtras());
         //setflags
         intent.setFlags(route.getFlags());
         //再网intent中放置一个标记key
-        intent.putExtra(RouterManager.KEY_URL, route.getUrl());
+        intent.putExtra(RouterManager.KEY_URL, mFilter != null ? mFilter.doFilter(route.getUrl()) : route.getUrl());
+        RouterLogUtils.i(mFilter != null ? mFilter.doFilter(route.getUrl()) : route.getUrl());
         return intent;
     }
 
     public String getKeyUrl() {
         return RouterManager.KEY_URL;
+    }
+
+    public boolean isAllowEscape() {
+        return mActivityManifestMatcher.isAllowEscape();
+    }
+
+    public void setAllowEscape(boolean allowEscape) {
+        mActivityManifestMatcher.setAllowEscape(allowEscape);
     }
 }

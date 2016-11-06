@@ -3,9 +3,10 @@ package com.tony.router;
 import android.content.Context;
 
 import com.tony.router.route.IRoute;
+import com.tony.router.router.ActivityRouteTableInitializer;
 import com.tony.router.router.ActivityRouter;
 import com.tony.router.router.BrowserRouter;
-import com.tony.router.router.ActivityRouteTableInitializer;
+import com.tony.router.router.IFilter;
 import com.tony.router.router.IRouter;
 
 import java.util.ArrayList;
@@ -15,11 +16,9 @@ import java.util.List;
  * 管理所有Router及Router的行为
  */
 public class RouterManager {
-    private static final String TAG = "RouterManager";
     private static RouterManager mInstance = new RouterManager();
     private static List<IRouter> mRouters = new ArrayList<>();
     public static final String KEY_URL = "key_route_url";
-    public static final String KEY_FROM = "key_route_from";
 
     private RouterManager() {
     }
@@ -41,6 +40,11 @@ public class RouterManager {
         BrowserRouter browserRouter = BrowserRouter.getInstance();
         browserRouter.init(context);
         addRouter(browserRouter);
+    }
+
+    public void setFilter(IFilter filter) {
+        ActivityRouter.getInstance().setFilter(filter);
+        BrowserRouter.getInstance().setFilter(filter);
     }
 
     /**
@@ -72,11 +76,6 @@ public class RouterManager {
         }
     }
 
-    //获取所有router
-    public List<IRouter> getRouters() {
-        return mRouters;
-    }
-
     // TODO: 10/27/16 打开方式只会取第一个，局限性？如何针对多open进行优化
 
     /**
@@ -90,7 +89,6 @@ public class RouterManager {
         }
         return null;
     }
-
 
     public boolean open(String url) {
         for (IRouter router : mRouters) {
@@ -110,8 +108,6 @@ public class RouterManager {
         return false;
     }
 
-    //打开的时候需要针对scheme作匹配 但是无法对xml中的匹配
-    //并且根据filter来识别的一般是activity,所以该逻辑应该又activityrouter来实现
     public boolean open(Context context, String url) {
         for (IRouter router : mRouters) {
             if (router.canOpen(context, url)) {
@@ -119,13 +115,5 @@ public class RouterManager {
             }
         }
         return false;
-    }
-
-
-    /**
-     * 设置指定Router执行
-     */
-    public void setRouter(IRouter routrt) {
-
     }
 }

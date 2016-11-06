@@ -1,10 +1,7 @@
 package com.tony.router.route;
 
-import android.util.Log;
-
 import com.tony.router.cache.RouteCache;
-
-import java.util.Map;
+import com.tony.router.util.RouterLogUtils;
 
 /**
  * route复用工厂
@@ -47,8 +44,8 @@ public class RouteFactory {
         StringBuilder sb = new StringBuilder("mRouteCache = ");
         for (IRoute route : mRouteCache.snapshot().values()){
             sb.append(route.getUrl());
-            sb.append(",");
+            sb.append(", ");
         }
-        Log.i(TAG, sb.toString());
+        RouterLogUtils.i(sb);
     }
 }

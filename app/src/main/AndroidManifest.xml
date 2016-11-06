@@ -16,16 +16,29 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SecondActivity">
+        <activity android:name=".InitSchemeActivity">
             <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="android.intent.action.VIEW" />
 
-                <data android:scheme="zx"/>
-                <data android:host="activity"/>
-                <data android:path="/second"/>
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:scheme="zx" />
+                <data android:host="activity" />
+                <data android:path="/second" />
             </intent-filter>
         </activity>
+        <activity android:name=".ManifestActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:scheme="activity" />
+                <data android:host="activity" />
+                <data android:path="/manifest" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".FilterActivity"></activity>
     </application>
 
 </manifest>

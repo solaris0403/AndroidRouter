@@ -2,8 +2,8 @@ package com.tony.router.matcher;
 
 import android.content.Context;
 
-import com.tony.router.route.IRoute;
 import com.tony.router.router.ActivityRouter;
+import com.tony.router.util.RouterLogUtils;
 import com.tony.router.util.RouterUtils;
 
 /**
@@ -22,14 +22,12 @@ public class ActivityManifestMatcher extends ActivityMatcher{
 
     @Override
     public boolean match(Context context, String url) {
-        if (RouterUtils.queryActivity(context, isAllowEscape, url)){
+        //避免匹配到手机的browser
+        if ((!RouterUtils.getScheme(url).equals("http") && !RouterUtils.getScheme(url).equals("https")) && RouterUtils.queryActivity(context, isAllowEscape, url)){
             ActivityRouter.getInstance().addMatchSchemes(RouterUtils.getScheme(url));
+            RouterLogUtils.i(url);
+            return true;
         }
-        return true;
-    }
-
-    @Override
-    public boolean match(Context context, IRoute route) {
-        return match(context, route.getUrl());
+        return false;
     }
 }
