@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.tony.router.RouterManager;
 import com.tony.router.exception.RouteNotFoundException;
@@ -19,6 +20,7 @@ import com.tony.router.route.IRoute;
 import com.tony.router.util.RouterLogUtils;
 import com.tony.router.util.RouterUtils;
 
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,12 +30,25 @@ import java.util.Set;
  * Created by tony on 10/26/16.
  */
 public class ActivityRouter extends AbsRouter implements IMatcherHandler {
+    private static final String TAG = "ActivityRouter";
     private static ActivityRouter mActivityRouter = new ActivityRouter();
     //目前只有两个匹配器
     private ActivitySchemeMatcher mActivitySchemeMatcher;
     private ActivityManifestMatcher mActivityManifestMatcher;
     //如果没有提供context 当使用全局的ApplicationContent
     private Context mApplicationContent;
+    //所有路由的表
+    static Map<String, Class<? extends Activity>> mRouteTable = new HashMap<>();
+    static {
+        //导入注解类
+        try {
+            Constructor<?> constructor =  Class.forName("com.tony.router.router.AnnotatedActivityRouteTableInitializer").getConstructor();
+            ActivityRouteTableInitializer initializer = (ActivityRouteTableInitializer) constructor.newInstance();
+            mActivityRouter.importActivityRouteTableInitializer(initializer);
+        } catch (Exception e) {
+            Log.e(TAG, "import AnnotatedActivityRouteTableInitializer failed");
+        }
+    }
 
     public ActivityRouter() {
         //初始化匹配器
@@ -41,9 +56,6 @@ public class ActivityRouter extends AbsRouter implements IMatcherHandler {
         mActivityManifestMatcher = new ActivityManifestMatcher();
         mActivitySchemeMatcher.setMatcher(mActivityManifestMatcher);
     }
-
-    //所有路由的表
-    private Map<String, Class<? extends Activity>> mRouteTable = new HashMap<>();
 
     public static ActivityRouter getInstance() {
         return mActivityRouter;
@@ -57,10 +69,18 @@ public class ActivityRouter extends AbsRouter implements IMatcherHandler {
      */
     public void init(Context appContext, ActivityRouteTableInitializer initializer) {
         mApplicationContent = appContext;
-        if (initializer != null) {
+        importActivityRouteTableInitializer(initializer);
+        //todo 直接针对mRouteTable不安全 后期可添加验证规则
+    }
+
+    /**
+     * 导入ActivityRouteTableInitializer
+     * @param initializer
+     */
+    public void importActivityRouteTableInitializer(ActivityRouteTableInitializer initializer){
+        if(initializer != null) {
             initializer.initRouterTable(mRouteTable);
         }
-        //todo 直接针对mRouteTable不安全 后期可添加验证规则
     }
 
     @Override

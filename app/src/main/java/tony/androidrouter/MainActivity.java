@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.btn_activity_init:
                 start = System.currentTimeMillis();
-                Router.open(MainActivity.this, null);
+                Router.open(MainActivity.this, "activity://init");
                 RouterLogUtils.i(System.currentTimeMillis() - start);
                 break;
             case R.id.btn_activity_manifest:

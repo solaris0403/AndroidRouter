@@ -20,11 +20,11 @@ public class AppContext extends Application{
             public void initRouterTable(Map<String, Class<? extends Activity>> router) {
 //                router.put("zx://activity/main", MainActivity.class);
 
-                router.put("zx://activity/init", InitSchemeActivity.class);
+//                router.put("zx://activity/init", InitSchemeActivity.class);
                 router.put("zx://activity/manifest", ManifestActivity.class);
                 router.put("zx://activity/filter", FilterActivity.class);
             }
-        }, "zx");
+        }, "zx", "activity");
         Router.initBrowserRouter(this);
     }
 }
