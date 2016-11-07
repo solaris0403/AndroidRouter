@@ -2,6 +2,7 @@ package com.tony.router;
 
 import android.content.Context;
 
+import com.tony.router.exception.UrlInvalidException;
 import com.tony.router.route.IRoute;
 import com.tony.router.router.ActivityRouteTableInitializer;
 import com.tony.router.router.ActivityRouter;
@@ -81,7 +82,7 @@ public class RouterManager {
     /**
      * 通过url生成route
      */
-    public IRoute getRoute(String url) {
+    public IRoute getRoute(String url) throws UrlInvalidException {
         for (IRouter router : mRouters) {
             if (router.canOpen(url)) {
                 return router.getRoute(url);

@@ -13,7 +13,7 @@ public class InitSchemeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_second);
-        Intent intent= getIntent();
+        Intent intent = getIntent();
         int a = intent.getIntExtra("key", 0);
         Bundle bundle = intent.getExtras();
     }
